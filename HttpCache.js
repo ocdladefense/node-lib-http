@@ -5,10 +5,12 @@ class HttpCache {
 
     cache = {};
 
-    constructor(data) {
-        for (var key in data) {
-            this.cache[key] = Response.json(data);
-        }
+    static add(key, value) {
+        cache[key] = value;
+    }
+
+    static get(key) {
+        return cache[key];
     }
 
 

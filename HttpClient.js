@@ -50,22 +50,30 @@ class HttpClient {
         let mock = this.getMock(req);
 
         return mock.getResponse(req);
-    } catch (e) {
+      } catch (e) {
         data = {
-            success: false,
-            error: true,
-            code: e.cause,
-            message: e.message
+          success: false,
+          error: true,
+          code: e.cause,
+          message: e.message
         };
-
+        //if (req.contentType == application/json)
+        //return response.json
+        //if (req.contentType == text/html)
+        //e.message
         return Response.json(data);
-    }
+      }
       // We may or may not continue to use this caching facility.
       // Instead, let's give preference to this.getMock().
       // return this.cache.get(req.url);
     } else {
-
-      return fetch(req);
+      let resp = HttpCache.get(req);
+      if (resp) {
+        return resp;
+      }
+      resp = fetch(req);
+      HttpCache.add(req, resp);
+      return resp;
 
     }
 
