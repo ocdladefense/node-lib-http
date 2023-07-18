@@ -3,14 +3,26 @@ export { HttpCache }
 
 class HttpCache {
 
-    cache = {};
+    static cache = {};
 
-    static add(key, value) {
-        cache[key] = value;
+    static add(req, resp) {
+
+        let key = req.url;
+        //let lang = req.getHeaders("accept-language");
+        //key = key + "-" + lang;
+        HttpCache.cache[key] = resp;
     }
 
-    static get(key) {
-        return cache[key];
+    static get(req) {
+        let key = req.url;
+        if (HttpCache.cache[key]) {
+            return HttpCache.cache[key];
+        }
+        else {
+            return null;
+        }
+
+        //return this.cache[key] ? this.cache[key] : null;
     }
 
 

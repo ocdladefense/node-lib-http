@@ -24,8 +24,6 @@ class Url {
         if (qs != null) {
             this.query = Url.parseQueryString(qs);
         }
-
-
     }
     //https://www.googleapis.com/calendar/v3/calendars/biere-library@thebierelibrary.com/events?timeMin=2023-07-01&timeMax=2023=07-15&test
     static parseQueryString(qs) {
@@ -87,6 +85,6 @@ class Url {
 
         queryString = !kvpa.length ? "" : ("?" + kvpa.join("&"));
 
-        return this.scheme + "://" + this.domain + "/" + this.path + queryString + fragment;
+        return this.scheme + "://" + this.domain + this.path + queryString + fragment;
     }
 } 

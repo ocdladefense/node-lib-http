@@ -14,10 +14,11 @@ const MODE_LIVE = 0;
 class HttpClient {
 
   // Live mode, or Test mode (mocking)
-  mode = MODE_TEST;
+  mode = MODE_LIVE;
 
   config = null;
   static mocks = {};
+  static outbound = {};
   // Prototypical inheritance in JavaScript.
 
   // Class-based inheritance.
@@ -33,6 +34,7 @@ class HttpClient {
    * @returns Response
    */
   async send(req) {
+
     if (this.mode == MODE_TEST) {
       // Look for registered Mock classes here.
       // E.g., this.getMock(req.url).
@@ -69,12 +71,27 @@ class HttpClient {
     } else {
       let resp = HttpCache.get(req);
       if (resp) {
-        return resp;
+        return resp.clone();
       }
-      resp = fetch(req);
-      HttpCache.add(req, resp);
-      return resp;
+      if (HttpClient.outbound[req.url] != null) {
+        return HttpClient.outbound[req.url];
+      }
+      let pending = fetch(req);
 
+
+      //resp = await fetch(req);
+
+
+
+      HttpClient.outbound[req.url] = pending.then((resp) => {
+        HttpCache.add(req, resp);
+        return new Response("foobar").clone();//resp.clone();
+      });
+
+
+
+
+      return HttpClient.outbound[req.url];
     }
 
   }
