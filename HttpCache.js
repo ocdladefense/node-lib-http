@@ -15,14 +15,8 @@ class HttpCache {
 
     static get(req) {
         let key = req.url;
-        if (HttpCache.cache[key]) {
-            return HttpCache.cache[key];
-        }
-        else {
-            return null;
-        }
 
-        //return this.cache[key] ? this.cache[key] : null;
+        return HttpCache.cache[key] ? HttpCache.cache[key].clone() : null;
     }
 
 

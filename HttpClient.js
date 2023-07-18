@@ -19,13 +19,6 @@ class HttpClient {
   config = null;
   static mocks = {};
   static outbound = {};
-  // Prototypical inheritance in JavaScript.
-
-  // Class-based inheritance.
-  /*(constructor(config) {
-    this.config = config;
-    this.cache = this.config.cache || HttpCache.newFromMode(this.mode);
-  }*/
 
 
   /**
@@ -36,11 +29,6 @@ class HttpClient {
   async send(req) {
 
     if (this.mode == MODE_TEST) {
-      // Look for registered Mock classes here.
-      // E.g., this.getMock(req.url).
-      // For more info, see:
-      //  https://developer.mozilla.org/en-US/docs/Web/API/Request/url
-      //console.log(req.url);
 
       let data = [];
 
@@ -65,33 +53,22 @@ class HttpClient {
         //e.message
         return Response.json(data);
       }
-      // We may or may not continue to use this caching facility.
-      // Instead, let's give preference to this.getMock().
-      // return this.cache.get(req.url);
+
     } else {
-      let resp = HttpCache.get(req);
-      if (resp) {
-        return resp.clone();
-      }
-      if (HttpClient.outbound[req.url] != null) {
-        return HttpClient.outbound[req.url];
+      let cached = HttpCache.get(req);
+
+      if (cached || HttpClient.outbound[req.url]) {
+        return cached || HttpClient.outbound[req.url]
+        .then((resp) => { return HttpCache.get(req); });
       }
       let pending = fetch(req);
 
-
-      //resp = await fetch(req);
-
-
-
-      HttpClient.outbound[req.url] = pending.then((resp) => {
+      HttpClient.outbound[req.url] = pending;
+      
+      return pending.then((resp) => {
         HttpCache.add(req, resp);
-        return new Response("foobar").clone();//resp.clone();
+        return HttpCache.get(req);
       });
-
-
-
-
-      return HttpClient.outbound[req.url];
     }
 
   }
