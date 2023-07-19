@@ -1,31 +1,62 @@
 export { Url };
-const PATH_SEPARATOR = "/";
-const QUERYSTRING_SEPARATOR = "?";
+
+
+const URL_SCHEME_SEPARATOR = "://";
+
+const URL_PATH_SEPARATOR = "/";
+
+const URL_QUERYSTRING_SEPARATOR = "?";
+
+const URL_FRAGMENT_SEPARATOR = "#";
+
+const SCHEME_HTTP = "http";
+
+const SCHEME_HTTPS = "https";
+
+const SCHEME_FILE = "file";
+
+
 class Url {
+    
     url = null;
-    scheme = "http";
+
+    scheme = SCHEME_HTTP;
+
     domain = null;
+
     path = "";
+
     query = {};
+
     constructor(url) {
+
         this.url = url;
-        //let re = /:\/\/ | ? | #/mis;
+        
         let re = /:\/\/|\?/gis;
+
         let parts = this.url.split(re);
+
         this.scheme = parts.shift();
+
         let qs;
+
         if (parts.length == 2) {
             qs = parts.pop();
         }
+
         let d = parts[0];
-        parts = d.split(PATH_SEPARATOR);
+
+        parts = d.split(URL_PATH_SEPARATOR);
+
         this.domain = parts.shift();
-        this.path = PATH_SEPARATOR + parts.join(PATH_SEPARATOR);
+
+        this.path = URL_PATH_SEPARATOR + parts.join(URL_PATH_SEPARATOR);
+        
         if (qs != null) {
             this.query = Url.parseQueryString(qs);
         }
     }
-    //https://www.googleapis.com/calendar/v3/calendars/biere-library@thebierelibrary.com/events?timeMin=2023-07-01&timeMax=2023=07-15&test
+
     static parseQueryString(qs) {
         let queryParts = qs.split("&");
         let query = {};
@@ -40,6 +71,7 @@ class Url {
         return query;
     }
 
+
     static formatQueryString(obj) {
         let params = [];
         for (let prop in obj) {
@@ -49,6 +81,7 @@ class Url {
         };
         return params.join("&");
     }
+
 
     getDomain() {
         return this.domain;
@@ -83,8 +116,8 @@ class Url {
             kvpa.push(kvp);
         }
 
-        queryString = !kvpa.length ? "" : ("?" + kvpa.join("&"));
+        queryString = !kvpa.length ? "" : (URL_QUERYSTRING_SEPARATOR + kvpa.join("&"));
 
-        return this.scheme + "://" + this.domain + this.path + queryString + fragment;
+        return this.scheme + URL_SCHEME_SEPARATOR + this.domain + this.path + queryString + fragment;
     }
 } 

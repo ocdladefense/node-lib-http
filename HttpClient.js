@@ -1,5 +1,4 @@
 import { HttpCache } from "./HttpCache.js";
-import { HttpMock } from "./HttpMock.js";
 import { Url } from "./Url.js";
 
 export { HttpClient };
@@ -8,16 +7,24 @@ export { HttpClient };
 
 
 const MODE_TEST = 1;
+
 const MODE_LIVE = 0;
 
 
 class HttpClient {
 
-  // Live mode, or Test mode (mocking)
+  // By default our client is in live mode,
+  // i.e., it will make network requests.
+  // Testing mode will use mocking classes in place of network requests.
   mode = MODE_LIVE;
 
-  config = null;
+  // Store references to mocking classes.
+  // Mocking classes are registered against domains.
   static mocks = {};
+
+  // For performance reasons, store outbound requests.
+  // This enables what would otherwise be multiple requests to
+  // the same URL to resolve to the same fetch request.
   static outbound = {};
 
 
@@ -47,10 +54,12 @@ class HttpClient {
           code: e.cause,
           message: e.message
         };
-        //if (req.contentType == application/json)
-        //return response.json
-        //if (req.contentType == text/html)
-        //e.message
+        //if (req.headers.get("Accept") == application/json)
+        //return Response.json()
+        //if (req.headers.get("Accept") == text/html)
+        //return e.message
+        // Be sure to read the documentation.
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept
         return Response.json(data);
       }
 
@@ -76,16 +85,11 @@ class HttpClient {
   static register(domain, mock) {
     HttpClient.mocks[domain] = mock;
   }
-  //https://www.googleapis.com/calendar/v3/calendars/biere-library@thebierelibrary.com/events?timeMin=2023-07-01&timeMax=2023=07-15&test
+
   getMock(req) {
     let url = new Url(req.url);
-
-    /* With the way I have split this you need to choose the string at index 2 because 0 will be https: and 1 
-    will just be an empty string because there is no space or anything between // */
     let domain = url.getDomain();
-    /* could also do this
-    
-    */
+
     return HttpClient.mocks[domain];
   }
 }
