@@ -27,8 +27,6 @@ class HttpClient {
    * @returns Response
    */
   async send(req) {
-    console.log(req.contentType == "text/html");
-    console.log(req.headers.get("Content-Type") == "text/html");
     if (this.mode == MODE_TEST) {
 
       let data = [];
@@ -49,7 +47,7 @@ class HttpClient {
           message: e.message
         };
 
-        if (req.headers.get("Content-Type") == "application/json")
+        if (req.headers.get("Accept") == "application/json")
           return Response.json(data);
         //if (req.headers.get("Content-Type") == "text/html")
         return e.message
