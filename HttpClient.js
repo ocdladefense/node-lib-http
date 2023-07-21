@@ -27,7 +27,8 @@ class HttpClient {
    * @returns Response
    */
   async send(req) {
-
+    console.log(req.contentType == "text/html");
+    console.log(req.headers.get("Content-Type"));
     if (this.mode == MODE_TEST) {
 
       let data = [];
@@ -47,6 +48,7 @@ class HttpClient {
           code: e.cause,
           message: e.message
         };
+
         //if (req.contentType == application/json)
         //return response.json
         //if (req.contentType == text/html)
@@ -59,12 +61,12 @@ class HttpClient {
 
       if (cached || HttpClient.outbound[req.url]) {
         return cached || HttpClient.outbound[req.url]
-        .then((resp) => { return HttpCache.get(req); });
+          .then((resp) => { return HttpCache.get(req); });
       }
       let pending = fetch(req);
 
       HttpClient.outbound[req.url] = pending;
-      
+
       return pending.then((resp) => {
         HttpCache.add(req, resp);
         return HttpCache.get(req);
@@ -87,6 +89,13 @@ class HttpClient {
     
     */
     return HttpClient.mocks[domain];
+  }
+
+  toggleTest() {
+    this.mode = MODE_TEST;
+  }
+  getLiveMode() {
+    return this.mode == MODE_LIVE;
   }
 }
 
