@@ -34,7 +34,6 @@ class HttpClient {
    * @returns Response
    */
   async send(req) {
-
     if (this.mode == MODE_TEST) {
 
       let data = [];
@@ -54,13 +53,11 @@ class HttpClient {
           code: e.cause,
           message: e.message
         };
-        //if (req.headers.get("Accept") == application/json)
-        //return Response.json()
-        //if (req.headers.get("Accept") == text/html)
-        //return e.message
-        // Be sure to read the documentation.
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept
-        return Response.json(data);
+
+        if (req.headers.get("Accept") == "application/json")
+          return Response.json(data);
+        //if (req.headers.get("Content-Type") == "text/html")
+        return e.message
       }
 
     } else {
@@ -68,12 +65,12 @@ class HttpClient {
 
       if (cached || HttpClient.outbound[req.url]) {
         return cached || HttpClient.outbound[req.url]
-        .then((resp) => { return HttpCache.get(req); });
+          .then((resp) => { return HttpCache.get(req); });
       }
       let pending = fetch(req);
 
       HttpClient.outbound[req.url] = pending;
-      
+
       return pending.then((resp) => {
         HttpCache.add(req, resp);
         return HttpCache.get(req);
@@ -91,6 +88,13 @@ class HttpClient {
     let domain = url.getDomain();
 
     return HttpClient.mocks[domain];
+  }
+
+  toggleTest() {
+    this.mode = MODE_TEST;
+  }
+  getLiveMode() {
+    return this.mode == MODE_LIVE;
   }
 }
 
