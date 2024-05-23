@@ -1,16 +1,34 @@
-export { HttpMock };
+
 
 
 
 // Mocking classes should extend this.
-class HttpMock {
+export default class HttpMock {
 
     constructor() {
         
     }
 
-    getResponse(url) {
-        // Parse the URL.
+    /**
+     * 
+     * @param {Request} req 
+     */
+    getResponse(req) {
+        
+        switch (req.method) {
+            case "GET":
+                return this.get(req);
+            case "POST":
+                return this.post(req);
+            case "PUT":
+                return this.put(req);
+            case "DELETE":
+                return this.delete(req);
+            default:
+                return Response.error();
+        }
+
+        
     }
 }
 
