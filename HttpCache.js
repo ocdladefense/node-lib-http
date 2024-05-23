@@ -1,7 +1,7 @@
-export { HttpCache }
 
 
-class HttpCache {
+
+export default class HttpCache {
 
     static cache = {};
 

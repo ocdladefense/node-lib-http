@@ -1,5 +1,3 @@
-export { Url };
-
 
 const URL_SCHEME_SEPARATOR = "://";
 
@@ -16,7 +14,7 @@ const SCHEME_HTTPS = "https";
 const SCHEME_FILE = "file";
 
 
-class Url {
+export default class Url {
     
     url = null;
 
