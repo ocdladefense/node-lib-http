@@ -80,6 +80,10 @@ export default class Url {
         return params.join("&");
     }
 
+    getLastPathSegment() {
+        return this.path.split("/").pop();
+    }
+
 
     getDomain() {
         return this.domain;
