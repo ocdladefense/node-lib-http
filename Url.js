@@ -81,7 +81,9 @@ export default class Url {
     }
 
     getLastPathSegment() {
-        return this.path.split("/").pop();
+        let parts = this.path.split("/");
+        let last = parts.pop();
+        return last;
     }
 
 
