@@ -3,7 +3,6 @@ import Url from "./Url.js";
 import HttpHeader from "./HttpHeader.js";
 
 
-console.log("I am local HTTP module");
 
 export default class HttpClient {
 
