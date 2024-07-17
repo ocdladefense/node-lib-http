@@ -149,10 +149,14 @@ export default class HttpClient {
 
   // Returns true if the cached response is fresh: i.e. not stale.
   isResponseFresh(entry) {
-    // Using the header included in the request, check if there is a cache-control max-age value.
+    // Using the header included in the request
     let cacheControl = new HttpHeader("Cache-Control", entry.headers.get("Cache-Control") || "");
+    
+    // If we have a force-cache header, return true. Data is never stale.
+    if (cacheControl.hasValue("force-cache")) return true;
+    
+    // Check if there is a cache-control max-age value.
     let maxAge = cacheControl.getParameter("max-age");
-
     if (maxAge) {
 
         // Get the date of the cached response.
