@@ -26,10 +26,13 @@ export default class HttpClient {
 
 
   
-
-  constructor({LocalStorageCaching}) {
-      if (LocalStorageCaching)
+// local, always, never, or empty string
+  constructor({cacheOption}) {
+    this.cacheOption = cacheOption;
+    if (this.cacheOption === 'local') {
         this.localStorageCache = new LocalStorageCache();
+    }
+        
   }
 
 
@@ -62,6 +65,11 @@ export default class HttpClient {
         return mock.getResponse(req);
       }
 
+
+
+
+
+
       // Check the cache for a response.
       if (req.method == "GET")
       {
@@ -69,7 +77,7 @@ export default class HttpClient {
         if (this.localStorageCache) {
           cached = this.localStorageCache.get(req);
         }
-        else {
+        else if (this.cacheOption === 'always') {
           cached = HttpCache.get(req);
         }
       
@@ -77,11 +85,22 @@ export default class HttpClient {
         if(cached && this.isResponseFresh(cached)) return cached;
       }
 
+
+
+
+
+
+
       // If there is a pending request to the same URL, return it.
       if (HttpClient.outbound[key])
       {
         return HttpClient.outbound[key];
       }
+
+
+
+
+
 
       // If we've made it this far, we need to go to the network to get the resource.
       pending = fetch(req).then((resp) => {
@@ -104,7 +123,7 @@ export default class HttpClient {
           if (this.localStorageCache) {
             this.localStorageCache.put(req, resp.clone());
           }
-          else {
+          else if (this.cacheOption === 'always') {
             HttpCache.put(req, resp.clone());
           }
              
