@@ -34,7 +34,6 @@ export default class HttpClient {
 
 
   send(req) {
-
     if (navigator.onLine == false) {
       throw new Error("Network offline.");
     }
@@ -66,11 +65,13 @@ export default class HttpClient {
       // Check the cache for a response.
       if (req.method == "GET")
       {
-        // Grafting in my localStorageCaching solution here, as I think interrupting the cache check is the best place for it.
-        if (this.localStorageCache)
+        // If we are using local storage, intercept and prioritize it over cache.
+        if (this.localStorageCache) {
           cached = this.localStorageCache.get(req);
-        else
-          cached = HttpCache.get(req)
+        }
+        else {
+          cached = HttpCache.get(req);
+        }
       
         // Prefer a completed response, if one already happens to be in the cache.
         if(cached && this.isResponseFresh(cached)) return cached;
@@ -88,23 +89,26 @@ export default class HttpClient {
         // Remove the pending request, as we've now fulfilled it.
         delete HttpClient.outbound[key];
 
+
         // Get our cache-control if it exists.
         let cacheControl = new HttpHeader(
           "cache-control",
-          resp.headers.get("cache-control") || ""
+          req.headers.get("cache-control") || ""
         );
   
         // Do not cache if response has a cache-control value called no-cache
         // or if the method is anything but GET.
+
         if (req.method == "GET" && !cacheControl.hasValue("no-cache")) {
         // If we are using local storage caching, intercept the cache put and use local storage cache instead following the same logic of no-cache.
-          if (this.localStorageCache)
+          if (this.localStorageCache) {
             this.localStorageCache.put(req, resp.clone());
-
-          else 
+          }
+          else {
             HttpCache.put(req, resp.clone());
+          }
              
-          } // else dont cache
+        } // else dont cache
         return resp;
       });
 
