@@ -2,7 +2,7 @@ export default class LocalStorage {
     // JSON Object that holds default string key names and default values if no values exist
     static DEFAULTS = {};
 
-    constructor(config) {
+    constructor(config = {}) {
         // Define the default string keys to access the local storage. Expects JSON object with string keys and default value types.
         // EX. {"news": {lastFetch: new Date(), stories: null},  "favorites": new Array()}
         if (config.defaults !== undefined)
