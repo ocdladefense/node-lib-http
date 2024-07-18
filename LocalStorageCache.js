@@ -1,5 +1,6 @@
 import LocalStorageResponse from "./LocalStorageResponse.js";
 import LocalStorage from "./LocalStorage.js";
+import httpHeader from "./HttpHeader.js";
 export default class LocalStorageCache {
 
     // static REFRESH_INTERVAL = -1;
@@ -10,20 +11,18 @@ export default class LocalStorageCache {
 
     put(req, httpResp) {
         if (!this.caching) return null;
-        let resp = LocalStorageResponse.fromHttpResponse(httpResp);
+
+        let headers = {};
+        for (const key of req.headers.keys()) 
+            headers[key] = req.headers.get(key);
+
+        let resp = LocalStorageResponse.fromHttpResponse(httpResp, headers);
         let key = this.debug ? 
             req.method + req.url : 
             LocalStorageCache.cyrb53(req.method + req.url);
             
-        resp.then( resp => {
-            // let maxAgeString = "";
-            // if (LocalStorageCache.REFRESH_INTERVAL >= 0) 
-            //     maxAgeString = ", max-age="+LocalStorageCache.REFRESH_INTERVAL;
-            
-            // resp.addHeader("Date", new Date().toUTCString());
-            // resp.addHeader("Cache-Control", "public" + maxAgeString);
-            
-            let localStorage = new LocalStorage({});
+        resp.then( resp => {      
+            let localStorage = new LocalStorage();
             localStorage.setValue(key, resp.toString());
         });
 
