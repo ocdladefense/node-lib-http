@@ -1,7 +1,7 @@
 import HttpCache from "./HttpCache.js";
+import LocalStorageCache from "./LocalStorageCache.js";
 import Url from "./Url.js";
 import HttpHeader from "./HttpHeader.js";
-import LocalStorageCache from "./LocalStorageCache";
 
 
 console.log("I am local HTTP module");
@@ -25,14 +25,13 @@ export default class HttpClient {
    */
 
 
-  
+  /*
+  @param cache - Name of a class that implements the HttpCache interface.
+  */
 // local, always, never, or empty string
-  constructor({cacheOption}) {
-    this.cacheOption = cacheOption;
-    if (this.cacheOption === 'local') {
-        this.localStorageCache = new LocalStorageCache();
-    }
-        
+  constructor(config) {
+    let cacheType = config.cache || null;
+    this.cache = new cacheType(); // Dynamically instantiate our cache service from the config.        
   }
 
 
@@ -73,14 +72,12 @@ export default class HttpClient {
       // Check the cache for a response.
       if (req.method == "GET")
       {
-        // If we are using local storage, intercept and prioritize it over cache.
-        if (this.localStorageCache) {
-          cached = this.localStorageCache.get(req);
-        }
-        else if (this.cacheOption === 'always') {
-          cached = HttpCache.get(req);
-        }
-      
+
+        
+        // cached = HttpCache.get(req);
+        // check the cache for a matching response;
+        // if nothing's there we return null.
+       cached = this.cache.match(req);
         // Prefer a completed response, if one already happens to be in the cache.
         if(cached && this.isResponseFresh(cached)) return cached;
       }
@@ -120,12 +117,9 @@ export default class HttpClient {
 
         if (req.method == "GET" && !cacheControl.hasValue("no-cache")) {
         // If we are using local storage caching, intercept the cache put and use local storage cache instead following the same logic of no-cache.
-          if (this.localStorageCache) {
-            this.localStorageCache.put(req, resp.clone());
-          }
-          else if (this.cacheOption === 'always') {
-            HttpCache.put(req, resp.clone());
-          }
+
+            // HttpCache.put(req, resp.clone());
+            this.cache.put(req, resp.clone());
              
         } // else dont cache
         return resp;

@@ -1,6 +1,10 @@
 import LocalStorageResponse from "./LocalStorageResponse.js";
 import LocalStorage from "./LocalStorage.js";
-import httpHeader from "./HttpHeader.js";
+import HttpHeader from "./HttpHeader.js";
+
+
+
+
 export default class LocalStorageCache {
 
     // static REFRESH_INTERVAL = -1;
@@ -57,6 +61,12 @@ export default class LocalStorageCache {
 
     }
 
+
+    match(req) {
+        return this.get(req);
+    }
+
+    
     static cyrb53(str, seed = 0) {
         let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
         for(let i = 0, ch; i < str.length; i++) {
