@@ -41,20 +41,8 @@ export default class LocalStorageResponse {
     }
 
     // Convert an instance JavaScript Response to an instance of this class.
-    static fromHttpResponse(httpResp) {
-        let date, cacheControl, xCache;
-
-        date = new Date(httpResp.headers.get("Date")).toUTCString();
-        cacheControl = "public, max-age="+LocalStorageResponse.ttl;
-        xCache = "local-storage-cache";
-
-        let headers = new Headers(httpResp.headers);
-
-        headers.append("Date", date);
-        headers.append("Cache-Control", cacheControl);
-        headers.append("X-Cache", xCache);
-
-        // return new LocalStorageResponse(body, headers);
+    static fromHttpResponse(httpResp, headers = {}) {
+        // resp headers are not matching my request headers.
         return httpResp.text().then( body => new LocalStorageResponse(body,headers) );
     }
 }
