@@ -13,11 +13,10 @@ export default class HttpHeader {
 
     static parseValues(value) {
         let map = {};
-        let values = value.split(",").trim();
-        if (values.length == 1) return values[0];
-
+        let values = value.split(",");
+        
         for (let i = 0; i < values.length; i++) {
-            let current = values[i];
+            let current = values[i].trim();
             let [k,v] = current.split("="); // at index 0, when no "=", k = current, v = undefined
             map[k] = v;
         }

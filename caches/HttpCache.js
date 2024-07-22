@@ -1,24 +1,18 @@
 export default class HttpCache {
 
-    cache = {};
+    static cache = {};
 
-    put(req, resp) {
-
-        let key = req.method + req.url;
-        //let lang = req.getHeaders("accept-language");
-        //key = key + "-" + lang;
+    put(key, resp) {
         HttpCache.cache[key] = resp;
     }
 
-    get(req) {
-        let key = req.url;
-
+    get(key) {
         return HttpCache.cache[key] || null;
     }
 
     // Stay compatible with other cache interfaces.
-    match(req) {
-        return HttpCache.get(req);
+    match(key) {
+        return this.get(key);
     }
 
 

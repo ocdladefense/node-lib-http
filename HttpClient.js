@@ -1,5 +1,5 @@
-import HttpCache from "./HttpCache.js";
-import LocalStorageCache from "./LocalStorageCache.js";
+import HttpCache from "./caches/HttpCache.js";
+import LocalStorageCache from "./caches/LocalStorageCache.js";
 import Url from "./Url.js";
 import HttpHeader from "./HttpHeader.js";
 
@@ -26,12 +26,13 @@ export default class HttpClient {
 
 
   /*
-  @param cache - Name of a class that implements the HttpCache interface.
+  @param cacheOptions - Object with two keys: 'cache' and 'params'. Constructor is the name of our cache implementation. Params is an object that will be passed to that constructor.
   */
-// local, always, never, or empty string
-  constructor(config) {
-    let cacheType = config.cache || null;
-    this.cache = new cacheType(); // Dynamically instantiate our cache service from the config.        
+  constructor(config = {}) {
+    // Turns on and off hashing
+    this.debug = config.debug || false;
+    let cache = config['cacheOptions'] || null;
+    this.cache = cache ? new cache['cache'](cache['params']) : null; // Dynamically instantiate our cache service from the config. Leave null to use browser cache.
   }
 
 
@@ -39,7 +40,6 @@ export default class HttpClient {
     if (navigator.onLine == false) {
       throw new Error("Network offline.");
     }
-
 
       
     // Will hold any reference to a mocking class for the request.
@@ -51,9 +51,17 @@ export default class HttpClient {
     // Reference to the pending outbound request.
     let pending;
 
-    
-    let key = req.method + req.url;
+    // Key for our cache. If we are debugging, don't hash it. Otherwise, hash it.
+    let key = this.debug ? req.method + req.url : HttpClient.cyrb53(req.method + req.url);
 
+    // Get the cache control from our request headers. If there is no cache control, use an empty string.
+    let cacheControl = new HttpHeader(
+      "cache-control",
+      req.headers.get("cache-control")
+    ) || new HttpHeader("Cache-Control", "");
+
+    // Store our complex condition in a variable. If the request is a GET, we have a caching solution, and the cache control doesn't specify no-cache.
+    let usingCaching = req.method == "GET" && this.cache && !cacheControl.hasValue("no-cache"); 
 
     try {
 
@@ -65,27 +73,16 @@ export default class HttpClient {
       }
 
 
-
-
-
-
       // Check the cache for a response.
-      if (req.method == "GET")
+      if (usingCaching)
       {
-
-        
         // cached = HttpCache.get(req);
         // check the cache for a matching response;
         // if nothing's there we return null.
-       cached = this.cache.match(req);
+        cached = this.cache.match(key);
         // Prefer a completed response, if one already happens to be in the cache.
-        if(cached && this.isResponseFresh(cached)) return cached;
+        if(cached) return cached;
       }
-
-
-
-
-
 
 
       // If there is a pending request to the same URL, return it.
@@ -95,10 +92,6 @@ export default class HttpClient {
       }
 
 
-
-
-
-
       // If we've made it this far, we need to go to the network to get the resource.
       pending = fetch(req).then((resp) => {
 
@@ -106,35 +99,26 @@ export default class HttpClient {
         delete HttpClient.outbound[key];
 
 
-        // Get our cache-control if it exists.
-        let cacheControl = new HttpHeader(
-          "cache-control",
-          req.headers.get("cache-control") || ""
-        );
-  
-        // Do not cache if response has a cache-control value called no-cache
-        // or if the method is anything but GET.
+        // If we are using caching, store the response in the cache.
+        if (usingCaching) {
+            this.cache.put(key, resp.clone());
+        } 
 
-        if (req.method == "GET" && !cacheControl.hasValue("no-cache")) {
-        // If we are using local storage caching, intercept the cache put and use local storage cache instead following the same logic of no-cache.
 
-            // HttpCache.put(req, resp.clone());
-            this.cache.put(req, resp.clone());
-             
-        } // else dont cache
         return resp;
       });
+
 
       // Store the pending request.
       // This will prevent multiple unfulfilled requests to the same URL.
       HttpClient.outbound[key] = pending;
 
+
       return pending;
-      
 
     } catch (e) {
 
-      console.log(e);
+      console.error(e);
       if (req.headers.get("Accept") == "application/json") {
         return Response.json({
           success: false,
@@ -164,32 +148,19 @@ export default class HttpClient {
     return HttpClient.mocks[domain];
   }
 
-  // Returns true if the cached response is fresh: i.e. not stale.
-  isResponseFresh(entry) {
-    // Using the header included in the request
-    let cacheControl = new HttpHeader("Cache-Control", entry.headers.get("Cache-Control") || "");
-    
-    // If we have a force-cache header, return true. Data is never stale.
-    if (cacheControl.hasValue("force-cache")) return true;
-    
-    // Check if there is a cache-control max-age value.
-    let maxAge = cacheControl.getParameter("max-age");
-    if (maxAge) {
-
-        // Get the date of the cached response.
-        let cachedDate = new Date(entry.headers.get("Date"));
-        let cachedTime = cachedDate.getTime() / 1000;
-
-        // Get the current time.
-        let now = new Date();
-        let nowTime = now.getTime() / 1000;
-        
-        // Return true if the response is not stale.
-        return (nowTime - cachedTime) > maxAge;
+  static cyrb53(str, seed = 0) {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for(let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
     }
-    else
-      // If there is no cache-control max-age value, we want to get a new request anyways. Treat it as stale.
-      return false;  
+    h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
   }
 
 }
