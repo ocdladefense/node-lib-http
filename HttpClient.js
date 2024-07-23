@@ -55,10 +55,11 @@ export default class HttpClient {
     let key = this.debug ? req.method + req.url : HttpClient.cyrb53(req.method + req.url);
 
     // Get the cache control from our request headers. If there is no cache control, use an empty string.
+    let cacheHeader = req.headers.get("cache-control") || "";
     let cacheControl = new HttpHeader(
       "cache-control",
-      req.headers.get("cache-control")
-    ) || new HttpHeader("Cache-Control", "");
+      cacheHeader
+    );
 
     // Store our complex condition in a variable. If the request is a GET, we have a caching solution, and the cache control doesn't specify no-cache.
     let usingCaching = req.method == "GET" && this.cache && !cacheControl.hasValue("no-cache"); 
