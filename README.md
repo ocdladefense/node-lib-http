@@ -35,7 +35,7 @@ const header =
 
 
 const url = 'https://testApi.com/v1/?foo=123';
-const req = new Request(url, header));
+const req = new Request(url, header);
 
 
 // Local storage caching accepts params refresh to denote staleness of fetch in seconds.
@@ -63,9 +63,9 @@ const clientTwo = new HttpClient(
 const clientThree = new HttpClient();
 
 // In every instance, cached data is preferred and returned.
-const responseOne = await clientOne.send();
-const responseTwo = await clientTwo.send();
-const responseThree = await clientThree.send();
+const responseOne = await clientOne.send(req);
+const responseTwo = await clientTwo.send(req);
+const responseThree = await clientThree.send(req);
 ```
 
 ## Adding a new caching option
