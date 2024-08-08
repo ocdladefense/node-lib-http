@@ -87,7 +87,7 @@ export default class HttpClient {
 
 
       // If there is a pending request to the same URL, return it.
-      if (HttpClient.outbound[key])
+      if (false && HttpClient.outbound[key])
       {
         return HttpClient.outbound[key];
       }
