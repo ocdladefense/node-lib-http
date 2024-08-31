@@ -4,7 +4,7 @@ import Url from "./Url.js";
 import HttpHeader from "./HttpHeader.js";
 
 
-console.log("I am local HTTP module");
+
 
 export default class HttpClient {
 
@@ -81,6 +81,7 @@ export default class HttpClient {
         // check the cache for a matching response;
         // if nothing's there we return null.
         cached = this.cache.match(key);
+        delete HttpClient.outbound[key];
         // Prefer a completed response, if one already happens to be in the cache.
         if(cached) return cached;
       }
