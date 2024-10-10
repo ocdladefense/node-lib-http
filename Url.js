@@ -107,6 +107,10 @@ export default class Url {
         this.query[key] = value;
     }
 
+    addParam(key, value) {
+        this.query[key] = value;
+    }
+
     toString() {
         let queryString = "";
         let fragment = "";
