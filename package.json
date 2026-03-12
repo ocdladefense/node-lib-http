@@ -1,4 +1,5 @@
 {
     "name": "@ocdla/lib-http",
+    "type": "module",
     "version": "2.1.0"
 }
